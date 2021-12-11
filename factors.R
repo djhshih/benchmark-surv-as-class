@@ -55,16 +55,15 @@ s <- as.integer(et <= cr);
 # unique observed event times
 tt <- sort(unique(ot[s == 1]));
 
-surv_to_class <- function(time, status, cut) {
-	ifelse(status == 0 & time < cut, NA,
-		ifelse(status == 1 & ot <= cut, 1,
-			ifelse(ot > cut, 0, NA)
-		)
+classify_tte <- function(ftime, fstatus, t.cut) {
+	ifelse(ftime > t.cut,
+		0L,
+		ifelse(fstatus, 1L, NA)
 	)
 }
 
 tau <- 0.5;
-cl <- surv_to_class(ot, s, tau);
+cl <- classify_tte(ot, s, tau);
 
 table(s, cl, useNA="always")
 
