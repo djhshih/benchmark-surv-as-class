@@ -6,8 +6,8 @@ library(tidyr)
 #seed <- 1334;
 
 N <- 1000;
-nu <- 1;      # shape
-lambda <- 1;  # scale
+nu <- 3;      # shape
+lambda <- 2;  # scale
 
 out.fn <- filename("event-prob", tag=c(sprintf("shape-%.0f", nu), sprintf("scale-%.0f", lambda)));
 pdf.fn <- tag(out.fn, ext="pdf");
@@ -43,7 +43,8 @@ et <- rweibull(N, shape=nu, scale=exp(z));
 cr.max <- quantile(et, 0.95);
 
 # right-censor times
-cr <- runif(N, 0, cr.max);
+#cr <- runif(N, 0, cr.max);
+cr <- pmax(0, rnorm(N, cr.max * 0.5, cr.max * 0.5 * 0.25));
 
 # observed times
 ot <- pmin(et, cr);
