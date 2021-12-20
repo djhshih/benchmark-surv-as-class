@@ -3,20 +3,55 @@ library(io)
 library(ggplot2)
 library(tidyr)
 
-#seed <- 1334;
+seed <- 1337;
 
-N <- 1000;
-nu <- 3;      # shape
-lambda <- 2;  # scale
+N <- 500;
+alpha <- 1;      # shape
+lambda <- 1;     # rate
 
-out.fn <- filename("event-prob", tag=c(sprintf("shape-%.0f", nu), sprintf("scale-%.0f", lambda)));
+out.fn <- filename("event-prob", tag=c(sprintf("shape-%.0f", alpha), sprintf("rate-%.0f", lambda)));
 pdf.fn <- tag(out.fn, ext="pdf");
 
+# Weibull distribution
+
+# pdf
+f_weibull <- function(x, alpha, lambda) {
+	lp <- log(alpha) + log(lambda) + (alpha - 1)*log(x) - lambda * x^alpha;
+	exp(lp)
+}
+
 # survival function
-S <- function(x, ...) pweibull(x, shape=nu, scale=lambda, lower.tail=FALSE, ...);
+S_weibull <- function(x, alpha, lambda) {
+	lp <- -lambda * x^alpha;
+	exp(lp)
+}
+
+# hazard rate
+h_weibull <- function(x, alpha, lambda)  {
+	lp <- log(alpha) + log(lambda) + (alpha - 1)*log(x);
+	exp(lp)
+}
+
+# under this parameterization of Weibull,
+# modifying the hazard by a multiplicative factor is
+# equivalent to modifying the rate parameter lambda
+
+r_weibull <- function(n, alpha, lambda) {
+	# R implements weibull(x; a, b)
+	# where a = alpha, b = lambda^(-1/alpha)
+	b <- lambda^(-1/alpha);
+
+	rweibull(n, shape=alpha, scale=b)
+}
+
+f <- function(x) f_weibull(x, alpha, lambda);
+S <- function(x) S_weibull(x, alpha, lambda);
+h <- function(x) h_weibull(x, alpha, lambda);
+r <- function(n) r_weibull(n, alpha, lambda);
+
 
 # factor distributions
-theta <- c(0.25, 0.5, 0.5);
+theta <- c(0.5, 0.5, 0.5);
 
 X <- matrix(
 	unlist(lapply(theta,
@@ -32,19 +67,19 @@ colnames(X) <- c("null", "neg", "pos");
 # pos: risk factor
 
 # effects
-beta <- matrix(c(0, -1, 1), nrow=3) * 0.5;
+beta <- matrix(c(0, -1, 1), nrow=3);
 
 # log overall effect
-z <- log(lambda) - X %*% beta;
+z <- log(lambda) + X %*% beta;
 
 # times to event
-et <- rweibull(N, shape=nu, scale=exp(z));
+et <- r_weibull(N, alpha, exp(z));
 
 cr.max <- quantile(et, 0.95);
 
 # right-censor times
-#cr <- runif(N, 0, cr.max);
-cr <- pmax(0, rnorm(N, cr.max * 0.5, cr.max * 0.5 * 0.25));
+cr <- runif(N, 0, cr.max);
+#cr <- pmax(0, rnorm(N, cr.max * 0.5, cr.max * 0.5 * 0.25));
 
 # observed times
 ot <- pmin(et, cr);
@@ -63,7 +98,7 @@ classify_tte <- function(ftime, fstatus, t.cut) {
 	)
 }
 
-tau <- 0.5;
+tau <- 1;
 cl <- classify_tte(ot, s, tau);
 
 table(s, cl, useNA="always")
@@ -77,7 +112,7 @@ pe.tau <- 1 - S(tt);
 
 pe.tau.hat <- unlist(lapply(tt,
 	function(tau) {
-		mean(surv_to_class(ot, s, tau), na.rm=TRUE)
+		mean(classify_tte(ot, s, tau), na.rm=TRUE)
 	}
 ));
 
