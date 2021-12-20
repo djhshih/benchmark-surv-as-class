@@ -5,7 +5,7 @@ library(tidyr)
 
 seed <- 1337;
 
-N <- 500;
+N <- 1000;
 alpha <- 1;      # shape
 lambda <- 1;     # rate
 
@@ -47,8 +47,6 @@ r_weibull <- function(n, alpha, lambda) {
 f <- function(x) f_weibull(x, alpha, lambda);
 S <- function(x) S_weibull(x, alpha, lambda);
 h <- function(x) h_weibull(x, alpha, lambda);
-r <- function(n) r_weibull(n, alpha, lambda);
-
 
 # factor distributions
 theta <- c(0.5, 0.5, 0.5);
@@ -68,6 +66,8 @@ colnames(X) <- c("null", "neg", "pos");
 
 # effects
 beta <- matrix(c(0, -1, 1), nrow=3);
+#beta <- matrix(c(0, 0, 1), nrow=3);
+#beta <- matrix(c(0, -1, 0), nrow=3);
 
 # log overall effect
 z <- log(lambda) + X %*% beta;
@@ -98,7 +98,7 @@ classify_tte <- function(ftime, fstatus, t.cut) {
 	)
 }
 
-tau <- 1;
+tau <- quantile(et, 0.75);
 cl <- classify_tte(ot, s, tau);
 
 table(s, cl, useNA="always")
