@@ -163,8 +163,8 @@ d <- data.frame(
 survdiff(Surv(time, status) ~ null, data = d)
 survdiff(Surv(time, status) ~ neg, data = d)
 survdiff(Surv(time, status) ~ pos, data = d)
-coxph(Surv(time, status) ~ ., data=d)
+coxph(Surv(time, status) ~ null + neg + pos, data=d)
 
-summary(glm(status ~ . - time - class, data=d))
-summary(glm(class ~ . - time - status, data=d))
+summary(glm(status ~ null + neg + pos, data=d))
+summary(glm(class ~ null + neg + pos, data=d))
 
