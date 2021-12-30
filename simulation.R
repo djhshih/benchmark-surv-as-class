@@ -20,10 +20,10 @@ group <- levels(
   )
 );
 
-parameters <- as.data.frame(cbind(sort(rep(lambda_v, length(lambda_v))), alpha_v))
-colnames(parameters) <- c("lambda", "alpha")
+parameters <- as.data.frame(cbind(sort(rep(lambda_v, length(lambda_v))), alpha_v));
+colnames(parameters) <- c("lambda", "alpha");
 rownames(parameters) <- group;
-parameters <- parameters[, c(2, 1)]
+parameters <- parameters[, c(2, 1)];
 
 theta <- c(0.5, 0.5, 0.5); #factor distributions
 X <- matrix(
@@ -48,7 +48,7 @@ et<- lapply(z_v, function(x)
   lapply(alpha_v, 
          function(y) r_weibull(N, y, exp(x))
          )
-  );
+);
 et <- unlist(et, recursive=FALSE); 
 
 # right-censor times
@@ -85,16 +85,16 @@ pe.tau.hat <- lapply(tt, function(x)
     ot,
     s
     )
-)
-pe.tau.hat <- matrix(unlist(pe.tau.hat), nrow = length(tt), byrow = TRUE)
-colnames(pe.tau.hat) <- group
+);
+pe.tau.hat <- matrix(unlist(pe.tau.hat), nrow = length(tt), byrow = TRUE);
+colnames(pe.tau.hat) <- group;
 
 
-pe.tau.m <- melt(pe.tau, varnames=c("idx", "group"), value.name = "truth")
-pe.tau.hat.m <- melt(pe.tau.hat)
+pe.tau.m <- melt(pe.tau, varnames=c("idx", "group"), value.name = "truth");
+pe.tau.hat.m <- melt(pe.tau.hat);
 
-d <- cbind(pe.tau.m, estimator = pe.tau.hat.m$value, time = tt)
-d.ldf <- pivot_longer(d, cols = c("truth", "estimator"))
+d <- cbind(pe.tau.m, estimator = pe.tau.hat.m$value, time = tt);
+d.ldf <- pivot_longer(d, cols = c("truth", "estimator"));
 
 ggplot(d.ldf, aes(x=time, y=value, linetype=name)) +
   facet_wrap(~ group, ncol = 4) +
