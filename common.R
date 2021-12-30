@@ -1,5 +1,4 @@
-
-# generate data follwing weibull distribution 
+# generate data following weibull distribution 
 r_weibull <- function(n, alpha, lambda) {
   # R implements weibull(x; a, b)
   # where a = alpha, b = lambda^(-1/alpha)
