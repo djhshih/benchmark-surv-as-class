@@ -2,12 +2,13 @@ library(survival)
 library(io)
 library(ggplot2)
 library(tidyr)
+source("common.R")
 
-seed <- 1337;
+set.seed(1337)
 
 N <- 1000;
-alpha <- 1;      # shape
-lambda <- 1;     # rate
+alpha <- 0.5;      # shape
+lambda <- 0.5;     # rate
 
 out.fn <- filename("event-prob", tag=c(sprintf("shape-%.0f", alpha), sprintf("rate-%.0f", lambda)));
 pdf.fn <- tag(out.fn, ext="pdf");
@@ -20,12 +21,6 @@ f_weibull <- function(x, alpha, lambda) {
 	exp(lp)
 }
 
-# survival function
-S_weibull <- function(x, alpha, lambda) {
-	lp <- -lambda * x^alpha;
-	exp(lp)
-}
-
 # hazard rate
 h_weibull <- function(x, alpha, lambda)  {
 	lp <- log(alpha) + log(lambda) + (alpha - 1)*log(x);
@@ -35,14 +30,6 @@ h_weibull <- function(x, alpha, lambda)  {
 # under this parameterization of Weibull,
 # modifying the hazard by a multiplicative factor is
 # equivalent to modifying the rate parameter lambda
-
-r_weibull <- function(n, alpha, lambda) {
-	# R implements weibull(x; a, b)
-	# where a = alpha, b = lambda^(-1/alpha)
-	b <- lambda^(-1/alpha);
-
-	rweibull(n, shape=alpha, scale=b)
-}
 
 f <- function(x) f_weibull(x, alpha, lambda);
 S <- function(x) S_weibull(x, alpha, lambda);
@@ -75,6 +62,7 @@ z <- log(lambda) + X %*% beta;
 # times to event
 et <- r_weibull(N, alpha, exp(z));
 
+
 cr.max <- quantile(et, 0.95);
 
 # right-censor times
@@ -90,13 +78,6 @@ s <- as.integer(et <= cr);
 
 # unique observed event times
 tt <- sort(unique(ot[s == 1]));
-
-classify_tte <- function(ftime, fstatus, t.cut) {
-	ifelse(ftime > t.cut,
-		0L,
-		ifelse(fstatus, 1L, NA)
-	)
-}
 
 tau <- quantile(et, 0.75);
 cl <- classify_tte(ot, s, tau);
