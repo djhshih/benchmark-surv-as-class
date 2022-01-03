@@ -96,11 +96,14 @@ pe.tau.hat.m <- melt(pe.tau.hat);
 d <- cbind(pe.tau.m, estimator = pe.tau.hat.m$value, time = tt);
 d.ldf <- pivot_longer(d, cols = c("truth", "estimator"));
 
-ggplot(d.ldf, aes(x=time, y=value, linetype=name)) +
-  facet_wrap(~ group, ncol = 4) +
-  theme_classic() +
-  geom_line() +
-  labs(linetype="") +
-  xlim(0, 5) +
-  xlab("time") + ylab("event probability") +
-  theme(legend.position = "right")
+qdraw(
+  ggplot(d.ldf, aes(x=time, y=value, linetype=name)) +
+    facet_wrap(~ group, ncol = 4) +
+    theme_classic() +
+    geom_line() +
+    labs(linetype="") +
+    xlim(0, 5) +
+    xlab("time") + ylab("cumulative event probability") +
+    theme(legend.position = "right")
+  , width = 8, height = 8, "class-prob-vs-cum-event-prob.pdf"
+)
